@@ -1,0 +1,48 @@
+services:
+  mongodb:
+    container_name: mongodb
+    image: mongo:8.0.5
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root-password
+    volumes:
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    restart: unless-stopped
+  location-history-management:
+    container_name: location-history-management
+    image: location-history-management:latest
+    pull_policy: never
+    build:
+      context: .
+      dockerfile: ./location-history-management/Dockerfile
+    environment:
+      MONGODB_AUTH_DB: admin
+      MONGODB_USERNAME: location-history-management-service
+      MONGODB_PASSWORD: location-history-management-service-password
+      MONGODB_URI: mongodb://mongodb:27017
+      MONGODB_DEFAULT_DB: location-history-management-db
+    ports:
+      - "8081:8080"
+    restart: unless-stopped
+    depends_on:
+      - mongodb
+  location-management:
+    container_name: location-management
+    image: location-management:latest
+    pull_policy: never
+    build:
+      context: .
+      dockerfile: ./location-management/Dockerfile
+    environment:
+      MONGODB_AUTH_DB: admin
+      MONGODB_USERNAME: location-management-service
+      MONGODB_PASSWORD: location-management-service-password
+      MONGODB_URI: mongodb://mongodb:27017
+      MONGODB_DEFAULT_DB: location-management-db
+      LOCATION_HISTORY_MANAGEMENT_GRPC_URI: location-history-management:50051
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    depends_on:
+      - mongodb
+      - location-history-management

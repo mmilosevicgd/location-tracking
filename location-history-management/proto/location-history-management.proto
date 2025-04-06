@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+option go_package = "github.com/mmilosevicgd/location-tracking/location-history-management/proto";
+
+package main;
+
+import "google/protobuf/empty.proto";
+
+message Location {
+    string type = 1;
+    repeated double coordinates = 2;
+}
+
+message LocationInfo {
+    string username = 1;
+    Location location = 2;
+    int64 timestamp = 3;
+}
+
+service LocationHistoryManagement {
+  rpc UpdateUserLocation (LocationInfo) returns (google.protobuf.Empty) {}
+}
